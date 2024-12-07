@@ -1,9 +1,9 @@
 ﻿namespace Advent2024;
-static class DayOne
+static class DayThree
 {
     public static (List<int> left, List<int> right) ReadLists()
     {
-        return File.ReadAllLines(".\\Inputs\\DayOnePartOne.txt")
+        return File.ReadAllLines(".\\Inputs\\DayOnePartThree.txt")
             .Select(x => x.Split("   "))
             .Aggregate((new List<int>(), new List<int>()), (acc, nums) =>
             {
@@ -17,14 +17,9 @@ static class DayOne
     {
         var (col1, col2) = ReadLists();
 
-        var partOne = col1.Order()
-            .Zip(col2.Order(), (a, b) => Math.Abs(a - b))
-            .Sum();
+        var partOne = 0;
 
-        var partTwo = col2
-            .Where(new HashSet<int>(col1).Contains)
-            .GroupBy(x => x)
-            .Sum(x => x.Key * x.Count());
+        var partTwo = 0;
 
         return new Answer(partOne, partTwo);
     }

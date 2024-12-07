@@ -1,89 +1,58 @@
 ﻿namespace Advent2024;
-internal class DayTwo {
-	public enum Direction {
-		None,
-		Increase,
-		Decrease,
-	}
 
-	public int PartOne() {
-		var reports = File.ReadAllLines(".\\Inputs\\DayTwo.txt");
-		var safeReportCount = 0;
+internal static class DayTwo
+{
+    public static List<List<int>> ReadLists()
+    {
+        return File.ReadAllLines(".\\Inputs\\DayTwo.txt")
+            .Select(line =>
+                line.Split()
+                    .Select(x => int.Parse(x))
+                    .ToList())
+            .ToList();
+    }
 
-		foreach (var report in reports) {
-			
-			Direction? direction = null;
-			var safe = true;
-			var readingFirstLevel = true;
-			var levels = report.Split(" ");
+    public static Answer Run()
+    {
+        var reports = ReadLists();
 
-			for (int i = 0; i < levels.Length - 1; i++) {
+        var partOne = reports.Count(IsValid);
+        var partTwo = reports.Count(IsValidWithUpToOneRemoved);
 
-				if (!safe) break;
+        return new Answer(partOne, partTwo);
+    }
 
-				var first = int.Parse(levels[i]);
-				var second = int.Parse(levels[i + 1]);
+    private static bool IsValidWithUpToOneRemoved(this List<int> values) =>
+        new[] { values }
+            .Concat(Enumerable.Range(0, values.Count)
+                        .Select(i => values.Take(i)
+                                        .Concat(values.Skip(i + 1))
+                                        .ToList()))
+            .Any(IsValid);
 
-				if ((directionChanged(first, second, ref direction) && !readingFirstLevel) || diffIsOutOfBounds(first, second)) {
-					safe = false;
-				}
-				readingFirstLevel = false;
-			}
+    private static bool IsValid(this (int prev, int next) pair, int diffsign) =>
+        Math.Abs(pair.next - pair.prev) >= 1 &&
+        Math.Abs(pair.next - pair.prev) <= 3 &&
+        Math.Sign(pair.next - pair.prev) == diffsign;
 
-			if (safe) safeReportCount++;
-		}
+    private static bool IsValid(this List<int> values) =>
+        values.Count < 2 || values.IsValid(Math.Sign(values[1] - values[0]));
 
-		return safeReportCount;
-	}
+    private static bool IsValid(this List<int> values, int diffSign) =>
+        values.Pairs().All(pair => pair.IsValid(diffSign));
 
-	public int PartTwo() {
-		var reports = File.ReadAllLines(".\\Inputs\\DayTwo.txt");
-		var safeReportCount = 0;
+    private static IEnumerable<(int prev, int next)> Pairs(this IEnumerable<int> values)
+    {
+        using var enumerator = values.GetEnumerator();
+        if (!enumerator.MoveNext())
+            yield break;
 
-		foreach (var report in reports) {
+        int prev = enumerator.Current;
+        while (enumerator.MoveNext())
+        {
+            yield return (prev, enumerator.Current);
+            prev = enumerator.Current;
+        }
 
-			Direction? direction = null;
-			var safe = true;
-			var readingFirstLevel = true;
-			var levels = report.Split(" ");
-			int? indexThatBroke = null;
-			for (int i = 0; i < levels.Length - 1; i++) {
-
-				if (!safe) break;
-
-				var first = int.Parse(levels[i]);
-				var second = int.Parse(levels[i + 1]);
-
-				if ((directionChanged(first, second, ref direction) && !readingFirstLevel) || diffIsOutOfBounds(first, second)) {
-					indexThatBroke = i;
-					
-
-					safe = false;
-				}
-				readingFirstLevel = false;
-			}
-
-			if (safe) safeReportCount++;
-		}
-
-		return safeReportCount;
-	}
-
-	private bool directionChanged(int first, int second, ref Direction? direction) {
-		var newDirection = (first - second) switch {
-			< 0 => Direction.Increase,
-			0 => Direction.None,
-			> 0 => Direction.Decrease,
-		};
-		var changed = newDirection == Direction.None
-			|| newDirection != direction;
-			
-		direction = newDirection;
-		return changed;
-	}
-
-	private bool diffIsOutOfBounds(int first, int second) {
-		var diff = Math.Abs(first - second);
-		return diff < 1 || diff > 3;
-	}
+    }
 }
