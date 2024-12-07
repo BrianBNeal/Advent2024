@@ -3,7 +3,7 @@
     internal class Day6
     {
         public record Position(int X, int Y);
-        public record PatrolStance(Position position, Direction direction);
+        public record PatrolPosition(Position position, Direction direction);
 
         private readonly char[][] startingMap;
         private readonly Position startingPosition;
@@ -15,29 +15,17 @@
 
         private const char blocked = '#';
         private const char visited = 'X';
-        private char[] indicators = ['^', '>', 'v', '<'];
-        private int xMax => startingMap[0].Length;
+        private readonly char[] indicators = ['^', '>', 'v', '<'];
         private int yMax => startingMap.Length;
+        private int xMax => startingMap[0].Length;
 
         public Day6()
         {
-            //startingMap = """
-            //     ....#.....
-            //     .........#
-            //     ..........
-            //     ..#.......
-            //     .......#..
-            //     ..........
-            //     .#..^.....
-            //     ........#.
-            //     #.........
-            //     ......#...
-            //     """
-            //    .Split(Environment.NewLine).Select(line => line.ToCharArray()).ToArray();
             startingMap = File.ReadAllLines(".\\Inputs\\DaySix.txt").Select(line => line.ToCharArray()).ToArray();
-            currentMap = startingMap.Select(x => x.ToArray()).ToArray();
             (startingPosition, startingDirection) = getStartingPositionAndDirection();
+            currentMap = startingMap.Select(x => x.ToArray()).ToArray();
             currentPosition = startingPosition;
+            currentDirection = startingDirection;
         }
 
         public int PartOne()
@@ -63,23 +51,28 @@
             }
 
             int waysToFoolGuard = 0;
-            goToStartingPositions();
             var validObstacleLocations = originalPath.ToList();
+
             for (int i = 0; i < validObstacleLocations.Count; i++)
             {
                 var obstacleLocation = validObstacleLocations[i];
                 if (obstacleLocation == startingPosition)
                 { continue; }
+
                 goToStartingPositions();
                 currentMap[obstacleLocation.Y][obstacleLocation.X] = blocked;
-                var patrolledPath = new HashSet<PatrolStance>() { new(startingPosition, startingDirection) };
+                var patrolledPath = new HashSet<PatrolPosition>() { new(startingPosition, startingDirection) };
                 bool caughtInALoop = false;
+
                 while (inBounds(currentPosition))
                 {
                     (currentPosition, currentDirection) = turnOrMove(currentPosition, currentDirection);
-                    if (patrolledPath.Contains(new PatrolStance(currentPosition, currentDirection)))
+
+                    if (patrolledPath.Contains(new PatrolPosition(currentPosition, currentDirection)))
                     { caughtInALoop = true; }
+
                     patrolledPath.Add(new(currentPosition, currentDirection));
+
                     if (!inBounds(currentPosition) || caughtInALoop)
                     { break; }
                 }
@@ -108,11 +101,11 @@
                 _ => throw new Exception("invalid indicator")
             };
 
-        private (Position pos, Direction facing) getStartingPositionAndDirection()
+        private PatrolPosition getStartingPositionAndDirection()
         {
             var startingRow = startingMap.First(line => line.Intersect(indicators).Any());
             var positionIndicator = startingRow.First(c => indicators.Contains(c));
-            return (new Position(Array.IndexOf([.. startingRow], positionIndicator), Array.IndexOf(startingMap, startingRow)), getStartingDirection(positionIndicator));
+            return new(new Position(Array.IndexOf([.. startingRow], positionIndicator), Array.IndexOf(startingMap, startingRow)), getStartingDirection(positionIndicator));
         }
 
         private bool inBounds(Position position) =>
@@ -122,18 +115,18 @@
             && position.Y < yMax;
 
 
-        private (Position position, Direction facing) turnOrMove(Position position, Direction direction)
+        private PatrolPosition turnOrMove(Position position, Direction direction)
         {
             var next = nextPosition(position);
 
             if (isBlocked(next))
             {
-                return (position, turn(direction));
+                return new(position, turn(direction));
             }
             else
             {
                 currentMap[position.Y][position.X] = visited;
-                return (next, direction);
+                return new(next, direction);
             }
         }
 
