@@ -1,3 +1,3 @@
 ﻿namespace Advent2024;
 
-public record Answer(int PartOne, int PartTwo);
+public record Answer(string PartOne, string PartTwo);

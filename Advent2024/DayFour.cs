@@ -21,7 +21,7 @@ static class DayFour
         var partOne = inputLines.GetXmasCount();
         var partTwo = inputLines.GetMasXCount();
 
-        return new Answer(partOne, partTwo);
+        return new Answer(partOne.ToString(), partTwo.ToString());
     }
 
     static string[] ReadInput(bool testMode = false) =>

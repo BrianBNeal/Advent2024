@@ -6,14 +6,10 @@ static class DayThree
     public static Answer Run()
     {
         var input = ReadInput();
-        var mulPattern = new Regex(@"mul\(\d+,\d+\)");
-        var doPattern = new Regex(@"do\(|don't\(");
-        var funcCalls = mulPattern.Matches(input);
+        var pattern = new Regex(@"mul\(\d+,\d+\)|do\(|don't\(");
 
         var enabled = true;
-        var answers = funcCalls
-                        .Concat(doPattern.Matches(input))
-                        .OrderBy(x => x.Index)
+        (List<Match> all, List<Match> enabled) answers = pattern.Matches(input)
                         .Aggregate((new List<Match>(), new List<Match>()), ((List<Match> all, List<Match> enabled) values, Match match) =>
                         {
                             switch (match.Value)
@@ -32,23 +28,18 @@ static class DayThree
                             }
                             return values;
                         });
-        var partOne = answers.Item1
+
+        var partOne = answers.all
             .Select(Parse)
             .Select(Multiply)
             .Sum();
 
-        var partTwo = answers.Item2
+        var partTwo = answers.enabled
             .Select(Parse)
             .Select(Multiply)
             .Sum();
-        return new Answer(partOne, partTwo);
-    }
 
-    static bool IsEnabled(this IEnumerable<Match> values)
-    {
-
-
-        return values.Any();
+        return new Answer(partOne.ToString(), partTwo.ToString());
     }
 
     static string ReadInput() =>

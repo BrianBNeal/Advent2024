@@ -5,16 +5,16 @@ static class DaySeven
 
     static DaySeven()
     {
-        input = ReadInput(true);
+        input = ReadInput();
     }
 
     public static Answer Run()
     {
-        var partOne = input.Sum(equation => equation.IsPossibleUsingAddAndMul() ? equation.target : 0);
+        var partOne = input.Sum(equation => equation.IsPossibleUsingAddAndMul(1, equation.values[0]) ? equation.target : 0);
 
         var partTwo = 0;
 
-        return new Answer(partOne, partTwo);
+        return new Answer(partOne.ToString(), partTwo.ToString());
     }
 
     static List<Equation> ReadInput(bool testMode = false) =>
@@ -27,31 +27,17 @@ static class DaySeven
             .Select(equStr =>
                 new Equation(
                    int.Parse(equStr.Split(":")[0]),
-                   equStr.Split(":")[1].Trim().Split(" ").Select(int.Parse).ToList()))
+                   equStr.Split(":")[1].Trim().Split(" ").Select(long.Parse).ToList()))
             .ToList();
 
-    static bool IsPossibleUsingAddAndMul(this Equation equation)
-    {
-        var target = equation.target;
-        var nums = equation.values;
-        var operatorCount = nums.Count - 1;
-        var operators = new char[operatorCount];
-        var possible = false;
+    //iterator pattern!
+    static bool IsPossibleUsingAddAndMul(this Equation equation, int pos, long currentValue) =>
+        (pos == equation.values.Count)
+            ? currentValue == equation.target
+            : (equation.IsPossibleUsingAddAndMul(pos + 1, currentValue + equation.values[pos]))
+                || (equation.IsPossibleUsingAddAndMul(pos + 1, currentValue * equation.values[pos]));
 
-        while (true)
-        {
-
-
-            if (1 == 1)
-            { possible = true; }
-
-            break;
-        }
-
-        return possible;
-    }
-
-    record Equation(int target, List<int> values);
+    record Equation(long target, List<long> values);
 
     static string TestData =>
         """

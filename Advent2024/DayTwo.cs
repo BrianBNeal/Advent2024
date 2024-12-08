@@ -9,7 +9,7 @@ static class DayTwo
         var partOne = reports.Count(IsValid);
         var partTwo = reports.Count(IsValidWithUpToOneRemoved);
 
-        return new Answer(partOne, partTwo);
+        return new Answer(partOne.ToString(), partTwo.ToString());
     }
 
     static List<List<int>> ReadInput() =>

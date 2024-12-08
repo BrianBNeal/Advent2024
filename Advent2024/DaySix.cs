@@ -1,7 +1,4 @@
-﻿
-using System.Text;
-
-namespace Advent2024;
+﻿namespace Advent2024;
 
 static class DaySix
 {
@@ -49,7 +46,6 @@ static class DaySix
         }
 
         var partOne = currentMap.SelectMany(x => x).Count(x => x == VISITED);
-        print(currentMap.ToGraphic());
 
         int partTwo = 0;
         var validObstacleLocations = originalPatrolPath.Select(x => x.Location).ToList();
@@ -76,19 +72,8 @@ static class DaySix
             { partTwo++; }
         }
 
-        return new(partOne, partTwo);
+        return new(partOne.ToString(), partTwo.ToString());
     }
-
-    static string ToGraphic(this char[][] map) =>
-        map.Aggregate(new StringBuilder(),
-            (sb, chars) => sb.AppendLine(new string(chars)))
-            .ToString();
-
-    static void print(string v)
-    {
-        Console.WriteLine(v);
-    }
-
 
     static Direction ParseDirection(this char indicator) =>
         indicator switch

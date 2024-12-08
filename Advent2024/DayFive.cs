@@ -25,7 +25,7 @@ static class DayFive
             .Select(GetCenterPage)
             .Sum();
 
-        return new Answer(partOne, partTwo);
+        return new Answer(partOne.ToString(), partTwo.ToString());
     }
 
     static (List<Rule> Rules, List<Update> Updates) ReadInput(bool testMode = false) =>

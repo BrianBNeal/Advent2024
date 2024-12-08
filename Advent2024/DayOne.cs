@@ -14,7 +14,7 @@ static class DayOne
             .GroupBy(x => x)
             .Sum(x => x.Key * x.Count());
 
-        return new Answer(partOne, partTwo);
+        return new Answer(partOne.ToString(), partTwo.ToString());
     }
 
     static (List<int> left, List<int> right) ReadInput() =>
