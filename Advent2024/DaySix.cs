@@ -1,168 +1,166 @@
-﻿//namespace Advent2024
-//{
-//    public static class DaySix
-//    {
-//        record Position(int X, int Y);
-//        record PatrolPosition(Position position, Direction direction);
+﻿
+using System.Text;
 
-//        const char blocked = '#';
-//        const char visited = 'X';
+namespace Advent2024;
 
-//        static readonly PatrolPosition startingPosition;
-//        static readonly char[][] startingMap;
+static class DaySix
+{
+    record PatrolPosition(Location Location, Direction Direction);
+    record Location(int X, int Y);
 
-//        static int yMax => startingMap.Length;
-//        static int xMax => startingMap[0].Length;
+    enum Direction
+    {
+        North,
+        East,
+        South,
+        West,
+    }
 
-//        static char[][] currentMap;
-//        static private PatrolPosition currentPosition;
+    const char BLOCKED = '#';
+    const char VISITED = 'X';
 
-//        static DaySix()
-//        {
-//            startingMap = ReadLists();
-//            startingPosition = getStartingPositionAndDirection();
+    static readonly PatrolPosition startingPosition;
+    static readonly char[][] startingMap;
 
-//            currentMap = startingMap.Select(x => x.ToArray()).ToArray();
-//            currentPosition = startingPosition;
-//        }
+    static int yMax => startingMap.Length;
+    static int xMax => startingMap[0].Length;
 
-//        public static Answer Run()
-//        {
-//            goToStartingPositions();
+    static private PatrolPosition currentPosition;
+    static char[][] currentMap;
 
-//            while (currentPosition.position.IsInBounds())
-//            {
-//                currentPosition.TurnOrMove();
-//            }
+    static DaySix()
+    {
+        startingMap = readInput();
+        startingPosition = getStartingPosition();
+        currentMap = cloneMap();
+        currentPosition = startingPosition;
+    }
 
-//            var partOne = currentMap.SelectMany(x => x).Count(x => x == visited);
+    public static Answer Run()
+    {
+        goToStartingPositions();
 
-//            var originalPath = new HashSet<Position>();
+        var originalPatrolPath = new HashSet<PatrolPosition>();
+        while (currentPosition.Location.IsInBounds())
+        {
+            currentMap[currentPosition.Location.Y][currentPosition.Location.X] = VISITED;
+            originalPatrolPath.Add(currentPosition);
+            currentPosition = currentPosition.TurnOrMove();
+        }
 
-//            goToStartingPositions();
-//            while (currentPosition.position.IsInBounds())
-//            {
-//                originalPath.Add(currentPosition);
-//                (currentPosition, currentDirection) = turnOrMove(currentPosition, currentDirection);
-//            }
+        var partOne = currentMap.SelectMany(x => x).Count(x => x == VISITED);
+        print(currentMap.ToGraphic());
 
-//            int waysToFoolGuard = 0;
-//            var validObstacleLocations = originalPath.ToList();
+        int partTwo = 0;
+        var validObstacleLocations = originalPatrolPath.Select(x => x.Location).ToList();
 
-//            for (int i = 0; i < validObstacleLocations.Count; i++)
-//            {
-//                var obstacleLocation = validObstacleLocations[i];
-//                if (obstacleLocation == startingPosition)
-//                { continue; }
+        for (int i = 0; i < validObstacleLocations.Count; i++)
+        {
+            var obstacleLocation = validObstacleLocations[i];
+            if (obstacleLocation == startingPosition.Location)
+            { continue; }
 
-//                goToStartingPositions();
-//                currentMap[obstacleLocation.Y][obstacleLocation.X] = blocked;
-//                var patrolledPath = new HashSet<PatrolPosition>() { new(startingPosition, startingDirection) };
-//                bool caughtInALoop = false;
+            goToStartingPositions();
+            currentMap[obstacleLocation.Y][obstacleLocation.X] = BLOCKED;
+            var patrolledPath = new HashSet<PatrolPosition>() { startingPosition };
+            bool caughtInALoop = false;
 
-//                while (inBounds(currentPosition))
-//                {
-//                    (currentPosition, currentDirection) = turnOrMove(currentPosition, currentDirection);
+            while (currentPosition.Location.IsInBounds() && !caughtInALoop)
+            {
+                currentMap[currentPosition.Location.Y][currentPosition.Location.X] = VISITED;
+                currentPosition = currentPosition.TurnOrMove();
+                caughtInALoop = patrolledPath.Contains(currentPosition);
+                patrolledPath.Add(currentPosition);
+            }
+            if (caughtInALoop)
+            { partTwo++; }
+        }
 
-//                    if (patrolledPath.Contains(new PatrolPosition(currentPosition, currentDirection)))
-//                    { caughtInALoop = true; }
+        return new(partOne, partTwo);
+    }
 
-//                    patrolledPath.Add(new(currentPosition, currentDirection));
+    static string ToGraphic(this char[][] map) =>
+        map.Aggregate(new StringBuilder(),
+            (sb, chars) => sb.AppendLine(new string(chars)))
+            .ToString();
 
-//                    if (!inBounds(currentPosition) || caughtInALoop)
-//                    { break; }
-//                }
-//                if (caughtInALoop)
-//                { waysToFoolGuard++; }
-//            }
-
-//            var partTwo = waysToFoolGuard;
-
-//            return new(partOne, partTwo);
-//        }
-
-//        private static char[][] ReadLists() =>
-//            File.ReadAllLines(".\\Inputs\\DaySix.txt").Select(line => line.ToCharArray()).ToArray();
-
-//        public enum Direction
-//        {
-//            North,
-//            East,
-//            South,
-//            West,
-//        }
-
-//        static Direction getStartingDirection(char indicator) =>
-//            indicator switch
-//            {
-//                '^' => Direction.North,
-//                '>' => Direction.East,
-//                'v' => Direction.South,
-//                '<' => Direction.West,
-//                _ => throw new Exception("invalid indicator")
-//            };
-
-//        static PatrolPosition getStartingPositionAndDirection()
-//        {
-//            char[] indicators = ['^', '>', 'v', '<'];
-//            var startingRow = startingMap.First(line => line.Intersect(indicators).Any());
-//            var positionIndicator = startingRow.First(c => indicators.Contains(c));
-//            return new(new Position(Array.IndexOf([.. startingRow], positionIndicator), Array.IndexOf(startingMap, startingRow)), getStartingDirection(positionIndicator));
-//        }
-
-//        static bool IsInBounds(this Position position) =>
-//            position.X >= 0
-//            && position.Y >= 0
-//            && position.X < xMax
-//            && position.Y < yMax;
+    static void print(string v)
+    {
+        Console.WriteLine(v);
+    }
 
 
-//        static PatrolPosition TurnOrMove(this PatrolPosition patrolPosition)
-//        {
-//            var next = nextPosition(patrolPosition.position);
+    static Direction ParseDirection(this char indicator) =>
+        indicator switch
+        {
+            '^' => Direction.North,
+            '>' => Direction.East,
+            'v' => Direction.South,
+            '<' => Direction.West,
+            _ => throw new Exception("invalid indicator")
+        };
 
-//            if (isBlocked(next))
-//            {
-//                return new(patrolPosition.position, turn(patrolPosition.direction));
-//            }
-//            else
-//            {
-//                currentMap[patrolPosition.position.Y][patrolPosition.position.X] = visited;
-//                return new(next, patrolPosition.direction);
-//            }
-//        }
 
-//        static Direction turn(Direction facing)
-//        {
-//            return facing switch
-//            {
-//                Direction.North => Direction.East,
-//                Direction.East => Direction.South,
-//                Direction.South => Direction.West,
-//                Direction.West => Direction.North,
-//                _ => throw new Exception("invalid direction")
-//            };
-//        }
+    static bool IsInBounds(this Location position) =>
+        position.X >= 0
+        && position.Y >= 0
+        && position.X < xMax
+        && position.Y < yMax;
 
-//        static bool isBlocked(Position next) =>
-//            inBounds(next) && currentMap[next.Y][next.X] == '#';
+    static PatrolPosition TurnOrMove(this PatrolPosition patrolPosition)
+    {
+        var next = patrolPosition.NextLocation();
 
-//        static Position nextPosition(Position position)
-//        {
-//            return currentDirection switch
-//            {
-//                Direction.North => new(position.X, position.Y - 1),
-//                Direction.East => new(position.X + 1, position.Y),
-//                Direction.South => new(position.X, position.Y + 1),
-//                Direction.West => new(position.X - 1, position.Y),
-//                _ => throw new Exception("that's not a direction")
-//            };
-//        }
+        return next.IsBlocked()
+            ? new(patrolPosition.Location, patrolPosition.Direction.Turn())
+            : new(next, patrolPosition.Direction);
+    }
 
-//        static void goToStartingPositions()
-//        {
-//            currentMap = startingMap.Select(x => x.ToArray()).ToArray();
-//            currentPosition = startingPosition;
-//        }
-//    }
-//}
+    static Direction Turn(this Direction facing)
+    {
+        return facing switch
+        {
+            Direction.North => Direction.East,
+            Direction.East => Direction.South,
+            Direction.South => Direction.West,
+            Direction.West => Direction.North,
+            _ => throw new Exception("invalid direction")
+        };
+    }
+
+    static bool IsBlocked(this Location next) =>
+        next.IsInBounds() && currentMap[next.Y][next.X] == '#';
+
+    static Location NextLocation(this PatrolPosition position) =>
+        position.Direction switch
+        {
+            Direction.North => new(position.Location.X, position.Location.Y - 1),
+            Direction.East => new(position.Location.X + 1, position.Location.Y),
+            Direction.South => new(position.Location.X, position.Location.Y + 1),
+            Direction.West => new(position.Location.X - 1, position.Location.Y),
+            _ => throw new Exception("invalid direction")
+        };
+
+    static PatrolPosition getStartingPosition()
+    {
+        char[] indicators = ['^', '>', 'v', '<'];
+        var startingRow = startingMap.Single(line => line.Intersect(indicators).Any());
+        var positionIndicator = startingRow.Single(indicators.Contains);
+        print("found starting position");
+        return new PatrolPosition(
+            new Location(Array.IndexOf([.. startingRow], positionIndicator), Array.IndexOf(startingMap, startingRow)),
+            positionIndicator.ParseDirection());
+    }
+
+    static void goToStartingPositions()
+    {
+        currentMap = cloneMap();
+        currentPosition = startingPosition;
+    }
+
+    static char[][] readInput() =>
+       File.ReadAllLines(".\\Inputs\\DaySix.txt").Select(line => line.ToCharArray()).ToArray();
+
+    static char[][] cloneMap() =>
+        startingMap.Select(x => x.ToArray()).ToArray();
+}
