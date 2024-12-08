@@ -18,7 +18,7 @@ static class DayOne
     }
 
     static (List<int> left, List<int> right) ReadInput() =>
-        File.ReadAllLines(".\\Inputs\\DayOnePartOne.txt")
+        File.ReadAllLines(".\\Inputs\\DayOne.txt")
             .Select(x => x.Split("   "))
             .Aggregate((new List<int>(), new List<int>()), (acc, nums) =>
             {
