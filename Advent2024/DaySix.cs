@@ -131,7 +131,6 @@ static class DaySix
         char[] indicators = ['^', '>', 'v', '<'];
         var startingRow = startingMap.Single(line => line.Intersect(indicators).Any());
         var positionIndicator = startingRow.Single(indicators.Contains);
-        print("found starting position");
         return new PatrolPosition(
             new Location(Array.IndexOf([.. startingRow], positionIndicator), Array.IndexOf(startingMap, startingRow)),
             positionIndicator.ParseDirection());
