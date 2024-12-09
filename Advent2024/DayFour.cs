@@ -3,8 +3,6 @@
 namespace Advent2024;
 static class DayFour
 {
-    record Position(int x, int y);
-
     static readonly string[] inputLines;
     static readonly int xMaxIndex;
     static readonly int yMaxIndex;

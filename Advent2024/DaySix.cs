@@ -2,8 +2,7 @@
 
 static class DaySix
 {
-    record PatrolPosition(Location Location, Direction Direction);
-    record Location(int X, int Y);
+    record PatrolPosition(Position Location, Direction Direction);
 
     enum Direction
     {
@@ -40,7 +39,7 @@ static class DaySix
         var originalPatrolPath = new HashSet<PatrolPosition>();
         while (currentPosition.Location.IsInBounds())
         {
-            currentMap[currentPosition.Location.Y][currentPosition.Location.X] = VISITED;
+            currentMap[currentPosition.Location.y][currentPosition.Location.x] = VISITED;
             originalPatrolPath.Add(currentPosition);
             currentPosition = currentPosition.TurnOrMove();
         }
@@ -57,13 +56,13 @@ static class DaySix
             { continue; }
 
             goToStartingPositions();
-            currentMap[obstacleLocation.Y][obstacleLocation.X] = BLOCKED;
+            currentMap[obstacleLocation.y][obstacleLocation.x] = BLOCKED;
             var patrolledPath = new HashSet<PatrolPosition>() { startingPosition };
             bool caughtInALoop = false;
 
             while (currentPosition.Location.IsInBounds() && !caughtInALoop)
             {
-                currentMap[currentPosition.Location.Y][currentPosition.Location.X] = VISITED;
+                currentMap[currentPosition.Location.y][currentPosition.Location.x] = VISITED;
                 currentPosition = currentPosition.TurnOrMove();
                 caughtInALoop = patrolledPath.Contains(currentPosition);
                 patrolledPath.Add(currentPosition);
@@ -86,11 +85,11 @@ static class DaySix
         };
 
 
-    static bool IsInBounds(this Location position) =>
-        position.X >= 0
-        && position.Y >= 0
-        && position.X < xMax
-        && position.Y < yMax;
+    static bool IsInBounds(this Position position) =>
+        position.x >= 0
+        && position.y >= 0
+        && position.x < xMax
+        && position.y < yMax;
 
     static PatrolPosition TurnOrMove(this PatrolPosition patrolPosition)
     {
@@ -113,16 +112,16 @@ static class DaySix
         };
     }
 
-    static bool IsBlocked(this Location next) =>
-        next.IsInBounds() && currentMap[next.Y][next.X] == '#';
+    static bool IsBlocked(this Position next) =>
+        next.IsInBounds() && currentMap[next.y][next.x] == '#';
 
-    static Location NextLocation(this PatrolPosition position) =>
+    static Position NextLocation(this PatrolPosition position) =>
         position.Direction switch
         {
-            Direction.North => new(position.Location.X, position.Location.Y - 1),
-            Direction.East => new(position.Location.X + 1, position.Location.Y),
-            Direction.South => new(position.Location.X, position.Location.Y + 1),
-            Direction.West => new(position.Location.X - 1, position.Location.Y),
+            Direction.North => new(position.Location.x, position.Location.y - 1),
+            Direction.East => new(position.Location.x + 1, position.Location.y),
+            Direction.South => new(position.Location.x, position.Location.y + 1),
+            Direction.West => new(position.Location.x - 1, position.Location.y),
             _ => throw new Exception("invalid direction")
         };
 
@@ -132,7 +131,7 @@ static class DaySix
         var startingRow = startingMap.Single(line => line.Intersect(indicators).Any());
         var positionIndicator = startingRow.Single(indicators.Contains);
         return new PatrolPosition(
-            new Location(Array.IndexOf([.. startingRow], positionIndicator), Array.IndexOf(startingMap, startingRow)),
+            new Position(Array.IndexOf([.. startingRow], positionIndicator), Array.IndexOf(startingMap, startingRow)),
             positionIndicator.ParseDirection());
     }
 

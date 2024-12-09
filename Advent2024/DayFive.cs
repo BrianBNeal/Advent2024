@@ -79,9 +79,6 @@ static class DayFive
             }
         }
 
-        if (result.Count != update.pages.Count)
-            throw new InvalidOperationException("No valid order exists for the given rules.");
-
         return update with { pages = result };
     }
 

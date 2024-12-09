@@ -1,11 +1,13 @@
 ﻿namespace Advent2024;
-static class DayEight
+static class DayNine
 {
+    
+
     static readonly char[][] input;
     static readonly int yBound;
     static readonly int xBound;
 
-    static DayEight()
+    static DayNine()
     {
         var useTestData = false;
         input = ReadInput(useTestData);
