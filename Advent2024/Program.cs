@@ -1,5 +1,5 @@
 ﻿using Advent2024;
 
-(var partOne, var partTwo) = DayThree.Run();
+(var partOne, var partTwo) = DayEight.Run();
 Console.WriteLine($"Part One: {partOne}");
 Console.WriteLine($"Part Two: {partTwo}");
