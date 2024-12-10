@@ -16,8 +16,8 @@ static class DayFour
 
     public static Answer Run()
     {
-        var partOne = inputLines.GetXmasCount();
-        var partTwo = inputLines.GetMasXCount();
+        var partOne = inputLines.GetPositions("X").Sum(XmasCountStemmingFromThisPosition);
+        var partTwo = inputLines.GetPositions("A").Count(IsCenterOfMasX);
 
         return new Answer(partOne.ToString(), partTwo.ToString());
     }
@@ -25,21 +25,17 @@ static class DayFour
     static string[] ReadInput(bool testMode = false) =>
         (testMode)
             ? TestData.Split(Environment.NewLine)
-            : File.ReadAllText(".\\Inputs\\DayFour.txt").Split(Environment.NewLine);
+            : File.ReadAllLines(".\\Inputs\\DayFour.txt");
 
-    static int GetXmasCount(this string[] lines)
-    {
-        return Enumerable.Range(0, lines.Length)
-            .Aggregate(new List<Position>(),
-                (acc, i) =>
-                {
-                    acc.AddRange(new Regex("X")
-                        .Matches(lines[i])
-                        .Select(x => new Position(x.Index, i)));
-                    return acc;
-                })
-            .Sum(XmasCountStemmingFromThisPosition);
-    }
+    static IEnumerable<Position> GetPositions(this IEnumerable<string> inputLines, string c) =>
+        inputLines.Aggregate(
+            (list: new List<Position>(), i: 0),
+            (acc, line) =>
+            {
+                acc.list.AddRange(Regex.Matches(line, c).Select(x => new Position(x.Index, acc.i)));
+                return acc;
+            })
+            .list;
 
     static int XmasCountStemmingFromThisPosition(this Position position)
     {
@@ -62,18 +58,6 @@ static class DayFour
 
         return words.Count(w => w == "XMAS");
     }
-
-    static int GetMasXCount(this string[] lines) =>
-        Enumerable.Range(0, lines.Length)
-            .Aggregate(new List<Position>(),
-                (acc, i) =>
-                {
-                    acc.AddRange(new Regex("A")
-                        .Matches(lines[i])
-                        .Select(x => new Position(x.Index, i)));
-                    return acc;
-                })
-            .Count(IsCenterOfMasX);
 
     static bool IsCenterOfMasX(this Position position)
     {
